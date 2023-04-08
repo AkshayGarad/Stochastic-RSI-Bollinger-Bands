@@ -1,0 +1,37 @@
+//@version=5
+indicator("Stochastic RSI + Bollinger Bands", shorttitle="Stoch RSI + BB")
+
+// Stochastic RSI inputs
+lengthRSI = input(title="RSI Length", defval=14)
+lengthStoch = input(title="Stochastic Length", defval=14)
+smoothK = input(title="Stochastic Smoothing", defval=3)
+smoothD = input(title="Stochastic D", defval=3)
+
+// Bollinger Bands inputs
+lengthBB = input(title="BB Length", defval=20)
+multBB = input(title="BB Multiplier", defval=2.0)
+
+// Compute Stochastic RSI
+rsi = rsi(close, lengthRSI)
+rsiHighest = highest(rsi, lengthStoch)
+rsiLowest = lowest(rsi, lengthStoch)
+stochRSI = (rsi - rsiLowest) / (rsiHighest - rsiLowest)
+k = sma(stochRSI, smoothK)
+d = sma(k, smoothD)
+
+// Compute Bollinger Bands
+basis = sma(close, lengthBB)
+dev = multBB * stdev(close, lengthBB)
+upperBB = basis + dev
+lowerBB = basis - dev
+
+// Plot the Stochastic RSI and Bollinger Bands
+plot(k, color=color.blue, title="Stochastic RSI")
+plot(d, color=color.green, title="Stochastic D")
+plot(upperBB, color=color.red, title="Upper Bollinger Band")
+plot(lowerBB, color=color.red, title="Lower Bollinger Band")
+
+// Add trade signals
+longSignal = crossover(k, lowerBB)
+shortSignal = crossunder(k, upperBB)
+bgcolor(longSignal ? color.green : shortSignal ? color.red : na, transp=70)
